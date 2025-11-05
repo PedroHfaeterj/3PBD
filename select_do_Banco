@@ -1,0 +1,1 @@
+SELECT * FROM `Cliente` WHERE `id_cliente` = 3;
