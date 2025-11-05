@@ -1,0 +1,24 @@
+SELECT
+    c.nome AS Nome_Cliente,
+    s.nome_servico AS Servico_Desejado,
+    f.nome AS Atendido_Por_Funcionario
+FROM
+    Fila_Espera AS fe
+JOIN
+    Cliente AS c ON fe.id_cliente = c.id_cliente
+JOIN
+    Funcionario AS f ON fe.criado_por_funcionario_id = f.id_funcionario
+JOIN
+    Servico AS s ON fe.id_servico_desejado = s.id_servico;
+
+
+
+SELECT
+    p.nome_pacote,
+    s.nome_servico
+FROM
+    Pacote AS p
+JOIN
+    Pacote_Servicos AS ps ON p.id_pacote = ps.id_pacote
+JOIN
+    Servico AS s ON ps.id_servico = s.id_servico;
