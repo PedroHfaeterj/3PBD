@@ -1,0 +1,7 @@
+UPDATE `Cliente`
+SET
+    `login` = 'brunocosta',
+    `senha_hash` = 'hash_do_bruno_789',
+    `id_token_pagamento` = 'tok_xyz987abc654'
+WHERE
+    `id_cliente` = 3;
