@@ -1,0 +1,3 @@
+INSERT INTO `Cliente` (`nome`, `email`, `login`, `senha_hash`, `telefone`, `id_token_pagamento`, `credito_disponivel`) VALUES
+('Ana Silva', 'ana.silva@email.com', 'anasilva', 'hash_da_senha_123', '21988776655', 'tok_abc123def456', 0.00),
+('Bruno Costa', 'bruno.costa@email.com', NULL, NULL, '21977665544', NULL, 50.00);
