@@ -1,0 +1,28 @@
+SELECT 
+    a.Placa, 
+    a.Modelo, 
+    a.Marca, 
+    a.Status, 
+    l.Nome AS Nome_Loja, 
+    c.Nome AS Cidade, 
+    c.UF
+FROM AUTOMOVEL a
+INNER JOIN LOJA l ON a.ID_Loja_Atual = l.ID_Loja
+INNER JOIN CIDADE c ON l.ID_Cidade = c.ID_Cidade
+ORDER BY a.Status, l.Nome;
+
+
+
+
+SELECT 
+    loc.ID_Locacao, 
+    cli.Nome AS Nome_Cliente, 
+    cli.Telefone,
+    auto.Modelo AS Carro, 
+    auto.Placa, 
+    DATE_FORMAT(loc.Data_Hora_Retirada, '%d/%m/%Y %H:%i') AS Retirada,
+    DATE_FORMAT(loc.Data_Hora_Devolucao_Prevista, '%d/%m/%Y %H:%i') AS Previsao_Devolucao
+FROM LOCACAO loc
+INNER JOIN CLIENTE cli ON loc.ID_Cliente = cli.ID_Cliente
+INNER JOIN AUTOMOVEL auto ON loc.Placa = auto.Placa
+WHERE loc.Data_Hora_Devolucao_Real IS NULL;
