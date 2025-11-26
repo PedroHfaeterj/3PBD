@@ -1,0 +1,81 @@
+-- ======================================================
+-- 1. DADOS DE INFRAESTRUTURA (Cidades e Lojas)
+-- ======================================================
+
+INSERT INTO CIDADE (Nome, UF) VALUES 
+('Rio de Janeiro', 'RJ'),
+('São Paulo', 'SP'),
+('Belo Horizonte', 'MG');
+
+-- Assumindo que os IDs gerados foram 1, 2 e 3
+INSERT INTO LOJA (Nome, Endereco, ID_Cidade) VALUES 
+('Aeroporto Galeão', 'Av. 20 de Janeiro, s/n', 1),
+('Centro SP', 'Av. Paulista, 1500', 2),
+('Savassi BH', 'Rua Pernambuco, 1000', 3);
+
+-- ======================================================
+-- 2. DADOS DE FROTA (Carros)
+-- ======================================================
+
+INSERT INTO AUTOMOVEL (Placa, Modelo, Marca, Ano, Status, ID_Loja_Atual) VALUES
+('ABC1234', 'Gol 1.6', 'VW', 2024, 'Livre', 1),        -- Está no Galeão
+('XYZ9090', 'Compass', 'Jeep', 2023, 'Livre', 1),      -- Está no Galeão
+('JKL5555', 'HB20', 'Hyundai', 2024, 'Livre', 2),      -- Está em SP
+('BMW0001', '320i', 'BMW', 2023, 'Alugado', 2),        -- Está rodando (Alugado)
+('OLD1999', 'Uno Mille', 'Fiat', 2010, 'Manutenção', 3); -- Está quebrado em BH
+
+-- ======================================================
+-- 3. SERVIÇOS ADICIONAIS
+-- ======================================================
+
+INSERT INTO SERVICO_ADICIONAL (Nome, Valor_Fixo) VALUES 
+('Seguro Taxa Fixa', 50.00),
+('Cadeira de Bebê', 20.00),
+('GPS', 15.00),
+('Motorista Bilingue', 150.00);
+
+-- ======================================================
+-- 4. PESSOAS (Clientes e Funcionários)
+-- ======================================================
+
+-- Clientes (Senha padrão: 123)
+INSERT INTO CLIENTE (Nome, Telefone, Email, Senha, Dados_Pagamento) VALUES 
+('João da Silva', '(21) 99999-1111', 'joao@teste.com', '123', 'VISA **** 1234'),
+('Maria Oliveira', '(11) 98888-2222', 'maria@teste.com', '123', 'MASTER **** 5678'),
+('Carlos Souza', '(31) 97777-3333', 'carlos@teste.com', '123', 'AMEX **** 9090');
+
+-- Funcionários (Senha padrão: admin)
+INSERT INTO FUNCIONARIO (Nome, Email, Senha, Cargo, ID_Loja_Alocada) VALUES 
+('Admin Chefe', 'admin@fallscar.com', 'admin', 'Gerente', 1),
+('Roberto Atendente', 'roberto@fallscar.com', 'admin', 'Atendente', 2);
+
+-- Motoristas (Opcionais)
+INSERT INTO MOTORISTA (Nome, CNH) VALUES
+('Motorista Pedro', '12345678900'),
+('Motorista Ana', '00987654321');
+
+-- ======================================================
+-- 5. MOVIMENTAÇÃO (Histórico para Relatórios)
+-- ======================================================
+
+-- RESERVA 1: João reservou pela Internet (Livre)
+INSERT INTO RESERVA (Data_Prevista_Retirada, Origem, ID_Cliente, ID_Loja_Retirada, ID_Funcionario) VALUES 
+('2025-12-20 10:00:00', 'Internet', 1, 1, NULL);
+
+-- RESERVA 2: Maria ligou e o Roberto reservou para ela (Livre)
+INSERT INTO RESERVA (Data_Prevista_Retirada, Origem, ID_Cliente, ID_Loja_Retirada, ID_Funcionario) VALUES 
+('2025-11-15 14:00:00', 'Telefone', 2, 2, 2);
+
+-- LOCAÇÃO ATIVA (O carro BMW que está "Alugado")
+-- Precisamos criar a reserva primeiro
+INSERT INTO RESERVA (Data_Prevista_Retirada, Origem, ID_Cliente, ID_Loja_Retirada, ID_Funcionario) VALUES 
+(NOW(), 'Loja', 3, 2, 2); -- Carlos alugou agora
+
+-- Inserindo a Locação do Carlos (ID_Reserva 3)
+INSERT INTO LOCACAO (Data_Hora_Retirada, Data_Hora_Devolucao_Prevista, Data_Hora_Devolucao_Real, Status_Pagamento, Valor_Avarias, ID_Reserva, Placa, ID_Cliente, ID_Motorista, ID_Funcionario_Balcao, ID_Loja_Retirada, ID_Loja_Devolucao) VALUES 
+(NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), NULL, 'Aprovado', 0.00, 3, 'BMW0001', 3, NULL, 2, 2, 2);
+
+-- Carlos contratou Seguro (ID 1) e GPS (ID 3)
+INSERT INTO ITENS_CONTRATO (ID_Locacao, ID_Servico, Quantidade) VALUES 
+(1, 1, 1), -- Seguro
+(1, 3, 1); -- GPS
