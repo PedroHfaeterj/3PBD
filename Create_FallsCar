@@ -1,0 +1,175 @@
+-- ==========================================================
+-- 1. CRIAÇÃO DO BANCO DE DADOS
+-- ==========================================================
+CREATE DATABASE IF NOT EXISTS if0_40526242_db_fallscar DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE if0_40526242_db_fallscar;
+
+-- ==========================================================
+-- 2. TABELAS ESTRUTURAIS (Sem dependências)
+-- ==========================================================
+
+CREATE TABLE CIDADE (
+    ID_Cidade INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    UF CHAR(2) NOT NULL
+);
+
+CREATE TABLE MOTORISTA (
+    ID_Motorista INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    CNH VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE SERVICO_ADICIONAL (
+    ID_Servico INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Valor_Fixo DECIMAL(10,2) NOT NULL
+);
+
+-- ==========================================================
+-- 3. TABELAS COM DEPENDÊNCIAS DE NÍVEL 1
+-- ==========================================================
+
+CREATE TABLE LOJA (
+    ID_Loja INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Endereco VARCHAR(255) NOT NULL,
+    ID_Cidade INT NOT NULL,
+    FOREIGN KEY (ID_Cidade) REFERENCES CIDADE(ID_Cidade)
+);
+
+CREATE TABLE CLIENTE (
+    ID_Cliente INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Telefone VARCHAR(20),
+    Email VARCHAR(100) NOT NULL UNIQUE, -- Login
+    Senha VARCHAR(255) NOT NULL,        -- Senha
+    Dados_Pagamento VARCHAR(255) NOT NULL
+);
+
+-- ==========================================================
+-- 4. TABELAS COM DEPENDÊNCIAS DE NÍVEL 2 (FROTA E STAFF)
+-- ==========================================================
+
+CREATE TABLE FUNCIONARIO (
+    ID_Funcionario INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE, -- Login
+    Senha VARCHAR(255) NOT NULL,        -- Senha
+    Cargo VARCHAR(50),
+    ID_Loja_Alocada INT NOT NULL,
+    FOREIGN KEY (ID_Loja_Alocada) REFERENCES LOJA(ID_Loja)
+);
+
+CREATE TABLE AUTOMOVEL (
+    Placa VARCHAR(10) PRIMARY KEY,
+    Modelo VARCHAR(50) NOT NULL,
+    Marca VARCHAR(50) NOT NULL,
+    Ano INT NOT NULL,
+    Status ENUM('Livre', 'Alugado', 'Reservado', 'Manutenção') DEFAULT 'Livre',
+    ID_Loja_Atual INT NOT NULL,
+    FOREIGN KEY (ID_Loja_Atual) REFERENCES LOJA(ID_Loja)
+);
+
+-- ==========================================================
+-- 5. TABELAS DE MOVIMENTAÇÃO (O CORAÇÃO DO SISTEMA)
+-- ==========================================================
+
+CREATE TABLE RESERVA (
+    ID_Reserva INT AUTO_INCREMENT PRIMARY KEY,
+    Data_Hora_Reserva DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Origem VARCHAR(20) NOT NULL, -- 'Internet', 'Telefone', 'Loja'
+    Data_Prevista_Retirada DATETIME NOT NULL,
+    ID_Cliente INT NOT NULL,
+    ID_Funcionario INT, -- NULL se for feita pela Internet
+    ID_Loja_Retirada INT NOT NULL,
+    FOREIGN KEY (ID_Cliente) REFERENCES CLIENTE(ID_Cliente),
+    FOREIGN KEY (ID_Funcionario) REFERENCES FUNCIONARIO(ID_Funcionario),
+    FOREIGN KEY (ID_Loja_Retirada) REFERENCES LOJA(ID_Loja)
+);
+
+CREATE TABLE LOCACAO (
+    ID_Locacao INT AUTO_INCREMENT PRIMARY KEY,
+    Data_Hora_Retirada DATETIME NOT NULL,
+    Data_Hora_Devolucao_Prevista DATETIME NOT NULL,
+    Data_Hora_Devolucao_Real DATETIME, -- NULL enquanto não devolver
+    Status_Pagamento VARCHAR(20) DEFAULT 'Pendente',
+    Valor_Avarias DECIMAL(10,2) DEFAULT 0.00,
+    
+    -- Chaves Estrangeiras
+    ID_Reserva INT NOT NULL,
+    Placa VARCHAR(10) NOT NULL,
+    ID_Cliente INT NOT NULL,
+    ID_Motorista INT, -- NULL se o cliente dirigir
+    ID_Funcionario_Balcao INT, -- Quem entregou a chave
+    ID_Loja_Retirada INT NOT NULL,
+    ID_Loja_Devolucao INT NOT NULL,
+    
+    FOREIGN KEY (ID_Reserva) REFERENCES RESERVA(ID_Reserva),
+    FOREIGN KEY (Placa) REFERENCES AUTOMOVEL(Placa),
+    FOREIGN KEY (ID_Cliente) REFERENCES CLIENTE(ID_Cliente),
+    FOREIGN KEY (ID_Motorista) REFERENCES MOTORISTA(ID_Motorista),
+    FOREIGN KEY (ID_Funcionario_Balcao) REFERENCES FUNCIONARIO(ID_Funcionario),
+    FOREIGN KEY (ID_Loja_Retirada) REFERENCES LOJA(ID_Loja),
+    FOREIGN KEY (ID_Loja_Devolucao) REFERENCES LOJA(ID_Loja)
+);
+
+-- ==========================================================
+-- 6. TABELAS DE DETALHES E OCORRÊNCIAS
+-- ==========================================================
+
+CREATE TABLE ITENS_CONTRATO (
+    ID_Locacao INT NOT NULL,
+    ID_Servico INT NOT NULL,
+    Quantidade INT DEFAULT 1,
+    PRIMARY KEY (ID_Locacao, ID_Servico),
+    FOREIGN KEY (ID_Locacao) REFERENCES LOCACAO(ID_Locacao),
+    FOREIGN KEY (ID_Servico) REFERENCES SERVICO_ADICIONAL(ID_Servico)
+);
+
+CREATE TABLE VISTORIA (
+    ID_Vistoria INT AUTO_INCREMENT PRIMARY KEY,
+    Tipo VARCHAR(20) NOT NULL, -- 'Retirada' ou 'Devolução'
+    Data DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Nivel_Tanque VARCHAR(20),
+    Avarias TEXT,
+    ID_Locacao INT NOT NULL,
+    FOREIGN KEY (ID_Locacao) REFERENCES LOCACAO(ID_Locacao)
+);
+
+CREATE TABLE MULTA (
+    ID_Multa INT AUTO_INCREMENT PRIMARY KEY,
+    Data DATETIME NOT NULL,
+    Valor DECIMAL(10,2) NOT NULL,
+    Descricao VARCHAR(255),
+    ID_Locacao INT NOT NULL,
+    FOREIGN KEY (ID_Locacao) REFERENCES LOCACAO(ID_Locacao)
+);
+
+-- ==========================================================
+-- 7. INSERTS INICIAIS (PARA O SISTEMA NÃO FICAR VAZIO)
+-- ==========================================================
+
+-- Cidades
+INSERT INTO CIDADE (Nome, UF) VALUES ('Rio de Janeiro', 'RJ'), ('São Paulo', 'SP');
+
+-- Lojas
+INSERT INTO LOJA (Nome, Endereco, ID_Cidade) VALUES 
+('Aeroporto Galeão', 'Av. 20 de Janeiro, s/n', 1),
+('Centro SP', 'Av. Paulista, 1000', 2);
+
+-- Carros
+INSERT INTO AUTOMOVEL (Placa, Modelo, Marca, Ano, Status, ID_Loja_Atual) VALUES
+('ABC1234', 'Gol', 'VW', 2024, 'Livre', 1),
+('XYZ9876', 'Compass', 'Jeep', 2023, 'Livre', 1),
+('DEF5678', 'HB20', 'Hyundai', 2024, 'Livre', 2);
+
+-- Serviços
+INSERT INTO SERVICO_ADICIONAL (Nome, Valor_Fixo) VALUES 
+('Seguro Completo', 50.00), 
+('Cadeira de Bebê', 20.00),
+('GPS', 15.00);
+
+-- Funcionário Admin (Para você testar futuramente)
+INSERT INTO FUNCIONARIO (Nome, Email, Senha, Cargo, ID_Loja_Alocada) VALUES
+('Admin Chefe', 'admin@fallscar.com', 'admin123', 'Gerente', 1);
