@@ -1,0 +1,57 @@
+-- Cliente
+
+INSERT INTO CLIENTE (Nome, Telefone, Email, Senha, Dados_Pagamento) 
+VALUES ('Roberto Carlos', '(11) 91234-5678', 'rcarlos@email.com', 'senha123', 'VISA **** 9999');
+
+
+SELECT * FROM CLIENTE;
+
+
+SELECT ID_Cliente, Nome, Telefone FROM CLIENTE WHERE Email = 'rcarlos@email.com';
+
+
+UPDATE CLIENTE 
+SET Telefone = '(11) 98888-7777' 
+WHERE Email = 'rcarlos@email.com';
+
+
+DELETE FROM CLIENTE WHERE Email = 'rcarlos@email.com';
+
+
+-- Automovel
+
+
+INSERT INTO AUTOMOVEL (Placa, Modelo, Marca, Ano, Status, ID_Loja_Atual) 
+VALUES ('UNO-2025', 'Uno Vivace', 'Fiat', 2014, 'Livre', 1);
+
+
+SELECT * FROM AUTOMOVEL WHERE Status = 'Livre';
+
+
+SELECT * FROM AUTOMOVEL WHERE Status = 'Manutenção';
+
+
+UPDATE AUTOMOVEL 
+SET Status = 'Alugado', ID_Loja_Atual = 2 
+WHERE Placa = 'UNO-2025';
+
+DELETE FROM AUTOMOVEL WHERE Placa = 'UNO-2025';
+
+-- Locaçao
+
+INSERT INTO LOCACAO (Data_Hora_Retirada, Data_Hora_Devolucao_Prevista, Status_Pagamento, ID_Reserva, Placa, ID_Cliente, ID_Loja_Retirada, ID_Loja_Devolucao) 
+VALUES (NOW(), '2025-12-30 10:00:00', 'Aprovado', 1, 'ABC1234', 1, 1, 1);
+
+
+SELECT * FROM LOCACAO WHERE Data_Hora_Devolucao_Real IS NULL;
+
+
+UPDATE LOCACAO 
+SET Data_Hora_Devolucao_Real = NOW(), 
+    Valor_Avarias = 100.00 
+WHERE ID_Locacao = 1;
+
+
+DELETE FROM LOCACAO WHERE ID_Locacao = 1;
+
+
